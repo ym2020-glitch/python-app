@@ -1,0 +1,13 @@
+# Render 用の設定（Blueprint）。
+# GitHub リポジトリを Render に接続し、この render.yaml を検出させると
+# 自動でセットアップされる。ffmpeg 込みの Docker で動かす。
+services:
+  - type: web
+    name: studio-rocky-mix
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8000

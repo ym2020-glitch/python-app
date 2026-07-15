@@ -1,0 +1,13 @@
+# Studio Rocky - AI ミックスサーバー 依存ライブラリ（Render 無料枠向けに軽量化）
+# ※ mp3/m4a/webm の読み込みには ffmpeg が必要（Dockerfile で導入済み）
+
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9   # ファイルアップロード受信
+
+numpy>=1.24
+scipy>=1.11               # 相互相関（音ズレ検出）・リサンプリング
+soundfile>=0.12           # wav 読み書き
+noisereduce>=3.0          # ノイズ除去
+pedalboard>=0.9           # Spotify製 高品質エフェクト（コンプ/リミッター）
+pydub>=0.25               # mp3/m4a/webm の読み込み（ffmpeg 経由）
