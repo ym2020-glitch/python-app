@@ -101,7 +101,40 @@
   .btn{display:block;text-align:center;text-decoration:none;background:#222834;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:14px}
   .saved{font-size:11.5px;color:var(--accent2);margin-top:9px;text-align:center}
   .err{color:var(--danger)}
+
+  /* ===== BackingTrackManager（Tone.js バンド／ネオン・ラック） ===== */
+  .btm{position:relative;border:1px solid #16302a;border-radius:12px;padding:14px;margin-bottom:16px;
+    background:linear-gradient(#070b0a,#05070a);box-shadow:inset 0 0 34px rgba(33,255,176,.05), 0 0 0 1px rgba(33,255,176,.04)}
+  .btm-head{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:#21ffb0;text-shadow:0 0 8px rgba(33,255,176,.6);margin-bottom:12px}
+  .btm-sub{color:#4db8ff;text-shadow:0 0 8px rgba(77,184,255,.6);font-variant-numeric:tabular-nums}
+  .btm-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .btm-play{flex:none;min-width:96px;padding:11px 14px;border-radius:10px;border:1px solid rgba(33,255,176,.5);
+    background:rgba(33,255,176,.08);color:#21ffb0;font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;letter-spacing:.1em;cursor:pointer;
+    box-shadow:0 0 10px rgba(33,255,176,.25)}
+  .btm-play.on{border-color:var(--danger);background:rgba(255,77,77,.12);color:#ff8080;box-shadow:0 0 14px rgba(255,77,77,.4)}
+  .btm-vol{flex:1;display:flex;align-items:center;gap:9px}
+  .btm-vol span{font-size:9px;letter-spacing:.2em;color:var(--muted)}
+  .btm-vol input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:5px;border-radius:4px;
+    background:linear-gradient(90deg,#21ffb0,#4db8ff);outline:none}
+  .btm-vol input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:#0a0f0c;border:2px solid #21ffb0;box-shadow:0 0 10px rgba(33,255,176,.7);cursor:pointer}
+  .btm-vol input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#0a0f0c;border:2px solid #21ffb0;box-shadow:0 0 10px rgba(33,255,176,.7);cursor:pointer}
+  .btm-inst{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+  .ienable{padding:8px 2px;border-radius:9px;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--muted);
+    font-size:10px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.15s}
+  .ienable.active{border-color:#4db8ff;color:#cfeaff;box-shadow:0 0 12px -1px rgba(77,184,255,.6);background:rgba(77,184,255,.1)}
+  .btm-sec{margin-top:10px}
+  .btm-label{font-size:9px;letter-spacing:.22em;color:var(--muted);margin-bottom:7px}
+  .btm-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .neon{padding:9px 2px;border-radius:9px;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--muted);
+    font-size:11px;font-weight:700;letter-spacing:.02em;cursor:pointer;transition:.15s}
+  @keyframes neonG{0%,100%{box-shadow:0 0 8px rgba(33,255,176,.55), inset 0 0 6px rgba(33,255,176,.25)}50%{box-shadow:0 0 18px rgba(33,255,176,.9), inset 0 0 9px rgba(33,255,176,.4)}}
+  @keyframes neonB{0%,100%{box-shadow:0 0 8px rgba(77,184,255,.55), inset 0 0 6px rgba(77,184,255,.25)}50%{box-shadow:0 0 18px rgba(77,184,255,.9), inset 0 0 9px rgba(77,184,255,.4)}}
+  .neon.g.active{border-color:#21ffb0;color:#c8ffe9;animation:neonG 1.6s ease-in-out infinite}
+  .neon.b.active{border-color:#4db8ff;color:#d5efff;animation:neonB 1.6s ease-in-out infinite}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -144,6 +177,38 @@
         </div>
 
         <button class="preview" id="previewBtn" style="display:none">▶ 試聴（鳴らして確かめる）</button>
+      </div>
+
+      <div class="btm">
+        <div class="btm-head mono"><span>⚡ Backing Band · Tone Engine</span><span class="btm-sub" id="btmBpm">104</span></div>
+        <div class="btm-row">
+          <button class="btm-play mono" id="tonePlay">▶ PLAY</button>
+          <div class="btm-vol"><span class="mono">VOL</span><input type="range" id="toneVol" min="0" max="100" value="80" aria-label="伴奏マスター音量" /></div>
+        </div>
+        <div class="btm-inst" id="instRow">
+          <button class="ienable active" data-inst="drums">🥁 DRUMS</button>
+          <button class="ienable active" data-inst="bass">🎸 BASS</button>
+          <button class="ienable active" data-inst="guitar">🎸 GTR</button>
+          <button class="ienable active" data-inst="keyboard">🎹 KEYS</button>
+        </div>
+        <div class="btm-sec">
+          <div class="btm-label mono">Guitar FX</div>
+          <div class="btm-btns" id="fxBtns">
+            <button class="neon g" data-fx="chorus">Chorus</button>
+            <button class="neon g" data-fx="reverb">Reverb</button>
+            <button class="neon g" data-fx="delay">Delay</button>
+            <button class="neon g" data-fx="distortion">Dist</button>
+          </div>
+        </div>
+        <div class="btm-sec">
+          <div class="btm-label mono">Keyboard Tone</div>
+          <div class="btm-btns" id="toneBtns">
+            <button class="neon b" data-tone="strings">Strings</button>
+            <button class="neon b" data-tone="sax">Sax</button>
+            <button class="neon b" data-tone="piano">Piano</button>
+            <button class="neon b" data-tone="pad">Pad</button>
+          </div>
+        </div>
       </div>
 
       <div class="transport">
@@ -326,8 +391,9 @@
       c.classList.toggle('active', c.getAttribute('data-k') === k);
     }
     var isBand = (k === 'metronome' || k === 'pop' || k === 'ballad' || k === 'rock');
-    if (k === 'pop' || k === 'ballad' || k === 'rock') { bpm = BACKING_STYLES[k].defaultBpm; bpmVal.textContent = bpm; }
-    if (k === 'metronome') { if (bpm < 40 || bpm > 240) bpm = 100; bpmVal.textContent = bpm; }
+    if (k === 'pop' || k === 'ballad' || k === 'rock') { setBpm(BACKING_STYLES[k].defaultBpm); }
+    if (k === 'metronome') { if (bpm < 40 || bpm > 240) setBpm(100); }
+    if (k !== 'none' && tonePlaying) toneStop(); // 内蔵グリッドを選んだら Tone バンドは止める
     fileWrap.style.display = (k === 'file') ? 'inline-block' : 'none';
     filenameEl.style.display = (k === 'file') ? 'block' : 'none';
     tempoRow.style.display = isBand ? 'flex' : 'none';
@@ -337,8 +403,15 @@
     var f = backingFile.files[0];
     if (f) { fileEl.src = URL.createObjectURL(f); filenameEl.textContent = '🎵 ' + f.name; previewBtn.style.display = 'block'; }
   });
-  $('bpmDown').addEventListener('click', function () { bpm = Math.max(40, bpm - 1); bpmVal.textContent = bpm; });
-  $('bpmUp').addEventListener('click', function () { bpm = Math.min(240, bpm + 1); bpmVal.textContent = bpm; });
+  // BPM は唯一の変数 bpm を全員が共有。ここに集約して Tone.Transport にも同期。
+  function setBpm(v) {
+    bpm = Math.min(240, Math.max(40, Math.round(v)));
+    bpmVal.textContent = bpm;
+    if (btmBpmEl) btmBpmEl.textContent = bpm;
+    if (window.Tone && toneBuilt) Tone.Transport.bpm.value = bpm;
+  }
+  $('bpmDown').addEventListener('click', function () { setBpm(bpm - 1); });
+  $('bpmUp').addEventListener('click', function () { setBpm(bpm + 1); });
 
   function togglePreview() {
     if (playing) { stopBacking(); playing = false; previewBtn.classList.remove('playing'); previewBtn.textContent = '▶ 試聴（鳴らして確かめる）'; }
@@ -453,6 +526,102 @@
       .catch(function () { savedEl.textContent = '⚠ 保存はスキップ（手元の再生はOK）'; });
   }
   recBtn.addEventListener('click', function () { recording ? stop() : start(); });
+
+  /* ============ BackingTrackManager（Tone.js バンド／スピーカーへ出力→マイクが一緒に録る） ============ */
+  var toneBuilt = false, tonePlaying = false;
+  var tMaster, tKick, tSnare, tHat, tHatFilter, tBass, tGuitar, tKeys, tFx = {}, tSeq;
+  var gFx = 'chorus', kTone = 'strings', barIndex = 0;
+  var tEnabled = { drums: true, bass: true, guitar: true, keyboard: true };
+  var btmBpmEl = $('btmBpm');
+
+  var PROG = [
+    { bass: 'C2', chord: ['C4', 'E4', 'G4'] },
+    { bass: 'G1', chord: ['G3', 'B3', 'D4'] },
+    { bass: 'A1', chord: ['A3', 'C4', 'E4'] },
+    { bass: 'F1', chord: ['F3', 'A3', 'C4'] }
+  ];
+  var KEY_PRESETS = {
+    strings: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.4, decay: 0.2, sustain: 0.8, release: 1.2 } },
+    sax: { oscillator: { type: 'square' }, envelope: { attack: 0.08, decay: 0.2, sustain: 0.7, release: 0.4 } },
+    piano: { oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.5, sustain: 0.2, release: 0.6 } },
+    pad: { oscillator: { type: 'sine' }, envelope: { attack: 0.8, decay: 0.4, sustain: 0.9, release: 1.5 } }
+  };
+
+  function buildTone() {
+    if (toneBuilt || !window.Tone) return;
+    tMaster = new Tone.Gain(0.8).toDestination();
+    tKick = new Tone.MembraneSynth({ volume: -4 }).connect(tMaster);
+    tSnare = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.18, sustain: 0 }, volume: -11 }).connect(tMaster);
+    tHatFilter = new Tone.Filter(7000, 'highpass').connect(tMaster);
+    tHat = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.04, sustain: 0 }, volume: -22 }).connect(tHatFilter);
+    tBass = new Tone.MonoSynth({ oscillator: { type: 'sawtooth' }, filter: { Q: 2, type: 'lowpass' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 }, filterEnvelope: { attack: 0.02, decay: 0.2, sustain: 0.4, baseFrequency: 120, octaves: 2.5 }, volume: -9 }).connect(tMaster);
+    tFx.chorus = new Tone.Chorus(4, 2.5, 0.5).connect(tMaster).start();
+    tFx.reverb = new Tone.Reverb(2.2).connect(tMaster);
+    tFx.delay = new Tone.FeedbackDelay('8n', 0.35).connect(tMaster);
+    tFx.distortion = new Tone.Distortion(0.5).connect(tMaster);
+    tGuitar = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.4 } });
+    tGuitar.volume.value = -15;
+    tGuitar.connect(tFx[gFx]);
+    tKeys = new Tone.PolySynth(Tone.Synth);
+    tKeys.volume.value = -13;
+    tKeys.set(KEY_PRESETS[kTone]);
+    tKeys.connect(tMaster);
+
+    tSeq = new Tone.Sequence(function (time, s) {
+      var p = PROG[barIndex % PROG.length];
+      if (tEnabled.drums) {
+        if (s % 8 === 0) tKick.triggerAttackRelease('C1', '8n', time);
+        if (s % 8 === 4) tSnare.triggerAttackRelease('16n', time);
+        if (s % 2 === 0) tHat.triggerAttackRelease('32n', time);
+      }
+      if (tEnabled.bass && s % 4 === 0) tBass.triggerAttackRelease(p.bass, '8n', time);
+      if (tEnabled.guitar && (s === 4 || s === 12)) tGuitar.triggerAttackRelease(p.chord, '8n', time);
+      if (tEnabled.keyboard && s === 0) tKeys.triggerAttackRelease(p.chord, '1m', time);
+      if (s === 15) barIndex++;
+    }, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], '16n');
+
+    toneBuilt = true;
+  }
+
+  function tonePlay() {
+    if (!window.Tone) { statusEl.innerHTML = '<span class="err">Tone.js の読み込みに失敗（通信環境をご確認ください）</span>'; return; }
+    Tone.start().then(function () {
+      buildTone();
+      Tone.Transport.bpm.value = bpm;   // 既存 BPM に同期
+      barIndex = 0;
+      tSeq.start(0);
+      Tone.Transport.start();
+      tonePlaying = true;
+      if (backingKind !== 'none') selectKind('none'); // 内蔵グリッドとの二重を防ぐ
+      updateToneUI();
+    });
+  }
+  function toneStop() {
+    if (tSeq) tSeq.stop();
+    if (window.Tone) Tone.Transport.stop();
+    tonePlaying = false;
+    updateToneUI();
+  }
+  function setGuitarFx(name) { gFx = name; if (toneBuilt && tGuitar) { tGuitar.disconnect(); tGuitar.connect(tFx[name]); } updateToneUI(); }
+  function setKeyTone(name) { kTone = name; if (toneBuilt && tKeys) tKeys.set(KEY_PRESETS[name]); updateToneUI(); }
+
+  var tonePlayBtn = $('tonePlay'), toneVol = $('toneVol');
+  var fxBtnEls = [].slice.call(document.querySelectorAll('#fxBtns .neon'));
+  var toneBtnEls = [].slice.call(document.querySelectorAll('#toneBtns .neon'));
+  var instBtnEls = [].slice.call(document.querySelectorAll('#instRow .ienable'));
+
+  function updateToneUI() {
+    tonePlayBtn.textContent = tonePlaying ? '■ STOP' : '▶ PLAY';
+    tonePlayBtn.classList.toggle('on', tonePlaying);
+    fxBtnEls.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-fx') === gFx); });
+    toneBtnEls.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tone') === kTone); });
+  }
+  tonePlayBtn.addEventListener('click', function () { tonePlaying ? toneStop() : tonePlay(); });
+  toneVol.addEventListener('input', function (e) { if (tMaster) tMaster.gain.value = Number(e.target.value) / 100; });
+  fxBtnEls.forEach(function (b) { b.addEventListener('click', function () { setGuitarFx(b.getAttribute('data-fx')); }); });
+  toneBtnEls.forEach(function (b) { b.addEventListener('click', function () { setKeyTone(b.getAttribute('data-tone')); }); });
+  instBtnEls.forEach(function (b) { b.addEventListener('click', function () { var i = b.getAttribute('data-inst'); tEnabled[i] = !tEnabled[i]; b.classList.toggle('active', tEnabled[i]); }); });
+  updateToneUI();
 
   selectKind('pop'); // 初期選択
 })();
