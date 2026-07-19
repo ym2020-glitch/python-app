@@ -192,6 +192,15 @@
           <button class="ienable active" data-inst="keyboard">🎹 KEYS</button>
         </div>
         <div class="btm-sec">
+          <div class="btm-label mono">Chords（コード数）</div>
+          <div class="btm-btns" id="chordBtns">
+            <button class="neon g" data-ch="3">3</button>
+            <button class="neon g" data-ch="4">4</button>
+            <button class="neon g" data-ch="5">5</button>
+            <button class="neon g" data-ch="6">6</button>
+          </div>
+        </div>
+        <div class="btm-sec">
           <div class="btm-label mono">Guitar FX</div>
           <div class="btm-btns" id="fxBtns">
             <button class="neon g" data-fx="chorus">Chorus</button>
@@ -534,18 +543,44 @@
   var tEnabled = { drums: true, bass: true, guitar: true, keyboard: true };
   var btmBpmEl = $('btmBpm');
 
-  var PROG = [
-    { bass: 'C2', chord: ['C4', 'E4', 'G4'] },
-    { bass: 'G1', chord: ['G3', 'B3', 'D4'] },
-    { bass: 'A1', chord: ['A3', 'C4', 'E4'] },
-    { bass: 'F1', chord: ['F3', 'A3', 'C4'] }
-  ];
+  // コード辞書と、コード数別の進行（歌いやすい C メジャー圏）
+  var CH = {
+    C:  { bass: 'C2', chord: ['C4', 'E4', 'G4'] },
+    G:  { bass: 'G1', chord: ['G3', 'B3', 'D4'] },
+    Am: { bass: 'A1', chord: ['A3', 'C4', 'E4'] },
+    F:  { bass: 'F1', chord: ['F3', 'A3', 'C4'] },
+    Em: { bass: 'E1', chord: ['E3', 'G3', 'B3'] },
+    Dm: { bass: 'D2', chord: ['D4', 'F4', 'A4'] }
+  };
+  var PROGS = {
+    3: [CH.C, CH.F, CH.G],                       // I-IV-V
+    4: [CH.C, CH.G, CH.Am, CH.F],                // 王道 I-V-vi-IV
+    5: [CH.C, CH.Em, CH.Am, CH.F, CH.G],         // I-iii-vi-IV-V
+    6: [CH.C, CH.G, CH.Am, CH.Em, CH.F, CH.G]    // I-V-vi-iii-IV-V
+  };
+  var chordCount = 4;
+  var PROG = PROGS[chordCount];
   var KEY_PRESETS = {
     strings: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.4, decay: 0.2, sustain: 0.8, release: 1.2 } },
     sax: { oscillator: { type: 'square' }, envelope: { attack: 0.08, decay: 0.2, sustain: 0.7, release: 0.4 } },
     piano: { oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.5, sustain: 0.2, release: 0.6 } },
     pad: { oscillator: { type: 'sine' }, envelope: { attack: 0.8, decay: 0.4, sustain: 0.9, release: 1.5 } }
   };
+
+  // ギター／キーボードは作り直せるようヘルパー化（切替時にクリーンな状態に戻す）
+  function makeGuitar() {
+    var g = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.4 } });
+    g.volume.value = -15;
+    g.connect(tFx[gFx]);
+    return g;
+  }
+  function makeKeys() {
+    var k = new Tone.PolySynth(Tone.Synth);
+    k.volume.value = -13;
+    k.set(KEY_PRESETS[kTone]);
+    k.connect(tMaster);
+    return k;
+  }
 
   function buildTone() {
     if (toneBuilt || !window.Tone) return;
@@ -559,13 +594,8 @@
     tFx.reverb = new Tone.Reverb(2.2).connect(tMaster);
     tFx.delay = new Tone.FeedbackDelay('8n', 0.35).connect(tMaster);
     tFx.distortion = new Tone.Distortion(0.5).connect(tMaster);
-    tGuitar = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.4 } });
-    tGuitar.volume.value = -15;
-    tGuitar.connect(tFx[gFx]);
-    tKeys = new Tone.PolySynth(Tone.Synth);
-    tKeys.volume.value = -13;
-    tKeys.set(KEY_PRESETS[kTone]);
-    tKeys.connect(tMaster);
+    tGuitar = makeGuitar();
+    tKeys = makeKeys();
 
     tSeq = new Tone.Sequence(function (time, s) {
       var p = PROG[barIndex % PROG.length];
@@ -596,18 +626,40 @@
       updateToneUI();
     });
   }
+  function releaseAllVoices() {
+    try { if (tGuitar) tGuitar.releaseAll(); } catch (e) {}
+    try { if (tKeys) tKeys.releaseAll(); } catch (e) {}
+    try { if (tBass) tBass.triggerRelease(); } catch (e) {}
+  }
   function toneStop() {
     if (tSeq) tSeq.stop();
     if (window.Tone) Tone.Transport.stop();
+    releaseAllVoices();               // 鳴りっぱなし防止
     tonePlaying = false;
     updateToneUI();
   }
-  function setGuitarFx(name) { gFx = name; if (toneBuilt && tGuitar) { tGuitar.disconnect(); tGuitar.connect(tFx[name]); } updateToneUI(); }
-  function setKeyTone(name) { kTone = name; if (toneBuilt && tKeys) tKeys.set(KEY_PRESETS[name]); updateToneUI(); }
+  // 切替時は古い音を確実に消し、シンセを作り直す（＝スタックノート＝鳴りっぱなしを防ぐ）
+  function setGuitarFx(name) {
+    gFx = name;
+    if (toneBuilt) { try { tGuitar.releaseAll(); tGuitar.dispose(); } catch (e) {} tGuitar = makeGuitar(); }
+    updateToneUI();
+  }
+  function setKeyTone(name) {
+    kTone = name;
+    if (toneBuilt) { try { tKeys.releaseAll(); tKeys.dispose(); } catch (e) {} tKeys = makeKeys(); }
+    updateToneUI();
+  }
+  function setChordCount(n) {
+    chordCount = n;
+    PROG = PROGS[n];
+    releaseAllVoices();               // 進行が変わる瞬間の残り音を消す
+    updateToneUI();
+  }
 
   var tonePlayBtn = $('tonePlay'), toneVol = $('toneVol');
   var fxBtnEls = [].slice.call(document.querySelectorAll('#fxBtns .neon'));
   var toneBtnEls = [].slice.call(document.querySelectorAll('#toneBtns .neon'));
+  var chordBtnEls = [].slice.call(document.querySelectorAll('#chordBtns .neon'));
   var instBtnEls = [].slice.call(document.querySelectorAll('#instRow .ienable'));
 
   function updateToneUI() {
@@ -615,11 +667,13 @@
     tonePlayBtn.classList.toggle('on', tonePlaying);
     fxBtnEls.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-fx') === gFx); });
     toneBtnEls.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tone') === kTone); });
+    chordBtnEls.forEach(function (b) { b.classList.toggle('active', Number(b.getAttribute('data-ch')) === chordCount); });
   }
   tonePlayBtn.addEventListener('click', function () { tonePlaying ? toneStop() : tonePlay(); });
   toneVol.addEventListener('input', function (e) { if (tMaster) tMaster.gain.value = Number(e.target.value) / 100; });
   fxBtnEls.forEach(function (b) { b.addEventListener('click', function () { setGuitarFx(b.getAttribute('data-fx')); }); });
   toneBtnEls.forEach(function (b) { b.addEventListener('click', function () { setKeyTone(b.getAttribute('data-tone')); }); });
+  chordBtnEls.forEach(function (b) { b.addEventListener('click', function () { setChordCount(Number(b.getAttribute('data-ch'))); }); });
   instBtnEls.forEach(function (b) { b.addEventListener('click', function () { var i = b.getAttribute('data-inst'); tEnabled[i] = !tEnabled[i]; b.classList.toggle('active', tEnabled[i]); }); });
   updateToneUI();
 
