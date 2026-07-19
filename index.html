@@ -17,34 +17,28 @@
   .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
   .wrap{max-width:520px;margin:0 auto;padding:18px 16px 60px}
 
-  /* ヘッダー */
   header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
   .logo{width:40px;height:40px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;
-    font-weight:800;font-size:20px;color:#fff;background:linear-gradient(#ff6b70,#e0393e);
-    box-shadow:0 4px 14px -3px rgba(255,90,95,.7)}
-  .brand{font-weight:700;font-size:17px;letter-spacing:.01em}
+    font-weight:800;font-size:20px;color:#fff;background:linear-gradient(#ff6b70,#e0393e);box-shadow:0 4px 14px -3px rgba(255,90,95,.7)}
+  .brand{font-weight:700;font-size:17px}
   .brand-sub{font-size:11px;color:var(--muted);letter-spacing:.14em}
   .pill{margin-left:auto;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent2);
     border:1px solid rgba(33,212,180,.35);border-radius:999px;padding:5px 11px;background:rgba(33,212,180,.07)}
 
-  .tagline{font-size:23px;font-weight:800;letter-spacing:-.01em;text-align:center;margin:6px 0 6px}
+  .tagline{font-size:23px;font-weight:800;text-align:center;margin:6px 0 6px}
   .lead{color:var(--muted);font-size:13px;text-align:center;margin:0 auto 14px;max-width:400px}
   .note{background:rgba(33,212,180,.07);border:1px solid rgba(33,212,180,.3);color:var(--accent2);
     border-radius:10px;padding:10px 12px;font-size:12.5px;margin-bottom:16px}
 
-  /* コンソール（ラック機材）*/
   .console{position:relative;border:1px solid var(--border);border-radius:16px;overflow:hidden;
     background:linear-gradient(#12161e,#0d1017);box-shadow:0 20px 50px -20px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.03)}
-  .screw{position:absolute;width:9px;height:9px;border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #3a4356, #10141b);box-shadow:inset 0 0 2px #000}
+  .screw{position:absolute;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #3a4356, #10141b);box-shadow:inset 0 0 2px #000}
   .screw.tl{top:9px;left:9px}.screw.tr{top:9px;right:9px}.screw.bl{bottom:9px;left:9px}.screw.br{bottom:9px;right:9px}
-  .console-top{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;
-    background:linear-gradient(#171c26,#12161e);border-bottom:1px solid var(--border)}
+  .console-top{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;background:linear-gradient(#171c26,#12161e);border-bottom:1px solid var(--border)}
   .console-title{font-size:10.5px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;font-weight:600}
   .console-mk{font-size:10.5px;letter-spacing:.2em;color:var(--accent2);text-transform:uppercase}
   .console-body{padding:18px 18px 20px}
 
-  /* ステータス＋タイマー */
   .statusrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
   .statled{display:flex;align-items:center;gap:9px}
   .led{width:12px;height:12px;border-radius:50%;background:#3a4150}
@@ -53,9 +47,8 @@
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
   .statlabel{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
   .statlabel.rec{color:var(--danger)}.statlabel.done{color:var(--accent2)}
-  .timer{font-size:30px;font-weight:700;letter-spacing:.02em;color:var(--fg);text-shadow:0 0 12px rgba(33,212,180,.25)}
+  .timer{font-size:30px;font-weight:700;color:var(--fg);text-shadow:0 0 12px rgba(33,212,180,.25)}
 
-  /* VUメーター */
   .meterbox{display:flex;align-items:center;gap:10px;border:1px solid #0004;background:#0009;border-radius:9px;padding:9px 11px;margin-bottom:16px}
   .metertag{font-size:10px;letter-spacing:.2em;color:var(--muted)}
   .segs{display:flex;gap:3px;flex:1}
@@ -64,32 +57,49 @@
   .seg.on.mid{background:#e8c33a;box-shadow:0 0 5px rgba(232,195,58,.6)}
   .seg.on.hi{background:var(--danger);box-shadow:0 0 5px rgba(255,77,77,.6)}
 
-  /* ラックパネル（伴奏・再生）*/
-  .rack{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;
-    background:linear-gradient(#1a1f29,#14181f)}
-  .rack-head{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;
-    display:flex;justify-content:space-between}
+  .wavebox{position:relative;height:100px;border:1px solid #0006;background:#000a;border-radius:10px;overflow:hidden;margin-bottom:16px}
+  .wavebox canvas{width:100%;height:100%;display:block}
+  .wave-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.08em;color:var(--muted);pointer-events:none}
+
+  .rack{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;background:linear-gradient(#1a1f29,#14181f)}
+  .rack-head{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;display:flex;justify-content:space-between}
   .rack-sub{color:var(--muted);letter-spacing:.14em}
-  .filebtn{display:inline-block;font-size:13px;color:var(--fg);background:#222834;border:1px solid var(--border);
-    border-radius:9px;padding:8px 14px;cursor:pointer}
+
+  .srcgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .src{display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid var(--border);border-radius:10px;
+    padding:9px 4px;background:rgba(0,0,0,.28);cursor:pointer;transition:.15s}
+  .src:active{transform:scale(.97)}
+  .src .sled{width:6px;height:6px;border-radius:50%;background:#2c3340}
+  .src .slabel{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+  .src .ssub{font-size:9px;color:var(--muted)}
+  .src.active{border-color:var(--accent2);background:rgba(33,212,180,.12);box-shadow:0 0 14px -2px rgba(33,212,180,.6)}
+  .src.active .sled{background:var(--accent2);box-shadow:0 0 6px #21d4b4}
+  .src.active .slabel{color:var(--fg)}
+
+  .filebtn{display:inline-block;font-size:13px;color:var(--fg);background:#222834;border:1px solid var(--border);border-radius:9px;padding:8px 14px;cursor:pointer;margin-top:12px}
   .filebtn input{display:none}
   .filename{font-size:12px;color:var(--muted);margin-top:8px}
 
-  /* トランスポート（録音ボタン）*/
+  .tempo{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px}
+  .tempo button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.3);color:var(--fg);font-size:19px;cursor:pointer}
+  .tempo .bpm{text-align:center}
+  .tempo .bpm b{font-size:22px;font-variant-numeric:tabular-nums}
+  .tempo .bpm span{display:block;font-size:9px;letter-spacing:.2em;color:var(--muted)}
+  .preview{width:100%;margin-top:12px;padding:10px;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+    border:1px solid rgba(33,212,180,.5);background:rgba(33,212,180,.1);color:var(--accent2)}
+  .preview.playing{border-color:var(--danger);background:rgba(255,77,77,.12);color:var(--danger)}
+
   .transport{display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px 0 2px}
-  .recbtn{width:82px;height:82px;border-radius:50%;border:none;cursor:pointer;transition:transform .1s;
-    background:linear-gradient(#ff6b70,#e0393e);box-shadow:0 6px 18px -4px rgba(255,90,95,.7);
-    outline:4px solid rgba(0,0,0,.3);outline-offset:2px}
+  .recbtn{width:82px;height:82px;border-radius:50%;border:none;cursor:pointer;transition:transform .1s;background:linear-gradient(#ff6b70,#e0393e);box-shadow:0 6px 18px -4px rgba(255,90,95,.7);outline:4px solid rgba(0,0,0,.3);outline-offset:2px}
   .recbtn:active{transform:scale(.95)}
   .recbtn.recording{background:linear-gradient(#2a3140,#191d26)}
-  .recbtn .dot{display:block;width:30px;height:30px;margin:0 auto;border-radius:50%;background:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.2)}
+  .recbtn .dot{display:block;width:30px;height:30px;margin:0 auto;border-radius:50%;background:#fff}
   .recbtn.recording .dot{width:24px;height:24px;border-radius:6px;background:var(--danger);box-shadow:0 0 10px #ff4d4d}
   .transport-status{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 
   audio{width:100%;margin:4px 0 10px}
-  .btn{display:block;text-align:center;text-decoration:none;background:#222834;color:var(--fg);
-    border:1px solid var(--border);border-radius:10px;padding:11px;font-size:14px}
-  .saved{font-size:11.5px;color:var(--accent2);margin-top:9px;text-align:center;letter-spacing:.06em}
+  .btn{display:block;text-align:center;text-decoration:none;background:#222834;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:14px}
+  .saved{font-size:11.5px;color:var(--accent2);margin-top:9px;text-align:center}
   .err{color:var(--danger)}
 </style>
 </head>
@@ -97,41 +107,43 @@
 <div class="wrap">
   <header>
     <div class="logo">R</div>
-    <div>
-      <div class="brand">Studio Rocky</div>
-      <div class="brand-sub mono">音声加工・編集スタジオ</div>
-    </div>
+    <div><div class="brand">Studio Rocky</div><div class="brand-sub mono">音声加工・編集スタジオ</div></div>
     <div class="pill mono">● Simple Rec</div>
   </header>
 
   <div class="tagline">歌えばその場でスタジオの響き</div>
   <p class="lead">イヤホンを外して、スピーカーの伴奏を聴きながら歌おう。伴奏と歌声を“まとめて一発録り”。</p>
-
   <div class="note">🔈 <b>イヤホンは外して。</b> スピーカーの伴奏と歌声を<b>一緒に</b>録るので、<b>絶対にズレません。</b></div>
 
   <div class="console">
     <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
-
     <div class="console-top">
       <span class="console-title mono">◆ Rocky · Vocal Console</span>
       <span class="console-mk mono">Rec-1</span>
     </div>
-
     <div class="console-body">
       <div class="statusrow">
         <div class="statled"><span class="led" id="led"></span><span class="statlabel mono" id="statlabel">Standby</span></div>
         <div class="timer mono" id="timer">00:00.0</div>
       </div>
 
-      <div class="meterbox">
-        <span class="metertag mono">LV</span>
-        <div class="segs" id="segs"></div>
-      </div>
+      <div class="meterbox"><span class="metertag mono">LV</span><div class="segs" id="segs"></div></div>
+
+      <div class="wavebox"><canvas id="wave"></canvas><div class="wave-ph mono" id="wavePh">録音ボタンを押して歌声をキャプチャ</div></div>
 
       <div class="rack">
         <div class="rack-head mono"><span>◆ Backing</span><span class="rack-sub">伴奏を選ぶ</span></div>
-        <label class="filebtn">ファイルを選択<input id="backingFile" type="file" accept="audio/*" /></label>
-        <div class="filename" id="filename">未選択（無しでもOK）</div>
+        <div class="srcgrid" id="srcgrid"></div>
+        <label class="filebtn" id="fileWrap" style="display:none">🎵 音源ファイルを選ぶ<input id="backingFile" type="file" accept="audio/*" /></label>
+        <div class="filename" id="filename" style="display:none">未選択</div>
+
+        <div class="tempo" id="tempoRow" style="display:none">
+          <button id="bpmDown" aria-label="テンポを下げる">−</button>
+          <div class="bpm"><b id="bpmVal" class="mono">104</b><span>♩ = BPM</span></div>
+          <button id="bpmUp" aria-label="テンポを上げる">＋</button>
+        </div>
+
+        <button class="preview" id="previewBtn" style="display:none">▶ 試聴（鳴らして確かめる）</button>
       </div>
 
       <div class="transport">
@@ -152,27 +164,217 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var backingFile = $('backingFile'), filename = $('filename');
+
+  /* ============ 内蔵バンド生成（本家 backingBand.ts を移植） ============ */
+  var TRIAD = { maj: [0, 4, 7], min: [0, 3, 7] };
+  var AHEAD = 0.3;
+  function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  var BACKING_STYLES = {
+    pop: { label: 'ポップ', sub: '明るい', defaultBpm: 104, intensity: 0.9,
+      progression: [{ root: 60, type: 'maj' }, { root: 55, type: 'maj' }, { root: 57, type: 'min' }, { root: 53, type: 'maj' }],
+      kick: [0, 8, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [0, 4, 8, 12] },
+    ballad: { label: 'バラード', sub: 'しっとり', defaultBpm: 72, intensity: 0.6,
+      progression: [{ root: 60, type: 'maj' }, { root: 57, type: 'min' }, { root: 53, type: 'maj' }, { root: 55, type: 'maj' }],
+      kick: [0, 8], snare: [8], hat: [0, 4, 8, 12], bass: [0, 8] },
+    rock: { label: 'ロック', sub: '激しい', defaultBpm: 124, intensity: 1.1,
+      progression: [{ root: 57, type: 'min' }, { root: 53, type: 'maj' }, { root: 60, type: 'maj' }, { root: 55, type: 'maj' }],
+      kick: [0, 6, 8, 14], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [0, 2, 4, 6, 8, 10, 12, 14] }
+  };
+  function makeNoise(ctx) {
+    var len = Math.floor(ctx.sampleRate * 0.4), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+  function createMetronome(ctx, out, getBpm) {
+    var timer = null, nextTime = 0, beat = 0;
+    function click(time, down) {
+      var g = ctx.createGain(), osc = ctx.createOscillator();
+      osc.frequency.value = down ? 1200 : 800;
+      g.gain.setValueAtTime(0.0001, time);
+      g.gain.exponentialRampToValueAtTime(0.7, time + 0.001);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + 0.05);
+      osc.connect(g).connect(out); osc.start(time); osc.stop(time + 0.06);
+    }
+    return {
+      start: function (when) {
+        nextTime = when; beat = 0;
+        timer = setInterval(function () {
+          var spb = 60 / getBpm();
+          while (nextTime < ctx.currentTime + AHEAD) { click(nextTime, beat % 4 === 0); nextTime += spb; beat++; }
+        }, 25);
+      },
+      stop: function () { if (timer !== null) { clearInterval(timer); timer = null; } }
+    };
+  }
+  function createBand(ctx, out, style, getBpm) {
+    var noise = makeNoise(ctx), timer = null, step = 0, bar = 0, nextStep = 0;
+    function kick(t) {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+      g.gain.setValueAtTime(0.9 * style.intensity, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+      o.connect(g).connect(out); o.start(t); o.stop(t + 0.18);
+    }
+    function snare(t) {
+      var s = ctx.createBufferSource(); s.buffer = noise;
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800;
+      var g = ctx.createGain(); g.gain.setValueAtTime(0.4 * style.intensity, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      s.connect(bp).connect(g).connect(out); s.start(t); s.stop(t + 0.2);
+    }
+    function hat(t) {
+      var s = ctx.createBufferSource(); s.buffer = noise;
+      var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000;
+      var g = ctx.createGain(); g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      s.connect(hp).connect(g).connect(out); s.start(t); s.stop(t + 0.05);
+    }
+    function bassHit(t, dur, freq) {
+      var o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = freq;
+      var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.28, t + 0.008);
+      g.gain.setValueAtTime(0.28, t + dur * 0.6); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + dur + 0.02);
+    }
+    function chordHit(t, dur, chord) {
+      var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.08);
+      g.gain.setValueAtTime(0.12, t + dur * 0.7); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      g.connect(out);
+      TRIAD[chord.type].forEach(function (iv) {
+        var o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = midiToFreq(chord.root + iv);
+        o.connect(lp); o.start(t); o.stop(t + dur + 0.05);
+      });
+      lp.connect(g);
+    }
+    function schedule(s, b, t, stepDur) {
+      var chord = style.progression[b % style.progression.length];
+      if (s === 0) chordHit(t, stepDur * 16, chord);
+      if (style.bass.indexOf(s) >= 0) bassHit(t, stepDur * 2, midiToFreq(chord.root - 24));
+      if (style.kick.indexOf(s) >= 0) kick(t);
+      if (style.snare.indexOf(s) >= 0) snare(t);
+      if (style.hat.indexOf(s) >= 0) hat(t);
+    }
+    return {
+      start: function (when) {
+        step = 0; bar = 0; nextStep = when;
+        timer = setInterval(function () {
+          var stepDur = 60 / getBpm() / 4;
+          while (nextStep < ctx.currentTime + AHEAD) {
+            schedule(step, bar, nextStep, stepDur); nextStep += stepDur; step++;
+            if (step >= 16) { step = 0; bar++; }
+          }
+        }, 25);
+      },
+      stop: function () { if (timer !== null) { clearInterval(timer); timer = null; } }
+    };
+  }
+
+  /* ============ バッキングエンジン（スピーカーから鳴らす） ============ */
+  var backingKind = 'none';   // none/metronome/pop/ballad/rock/file
+  var bpm = 104;
+  var playCtx = null, playOut = null, band = null, playing = false;
+  var fileEl = new Audio(); fileEl.preload = 'auto';
+
+  function getPlayCtx() {
+    if (!playCtx || playCtx.state === 'closed') playCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (playCtx.state === 'suspended') playCtx.resume();
+    return playCtx;
+  }
+  function startBacking() {
+    if (backingKind === 'none') return;
+    if (backingKind === 'file') {
+      if (fileEl.src) { fileEl.currentTime = 0; fileEl.play().catch(function () {}); }
+      return;
+    }
+    var ctx = getPlayCtx();
+    playOut = ctx.createGain(); playOut.gain.value = 0.95; playOut.connect(ctx.destination);
+    if (backingKind === 'metronome') band = createMetronome(ctx, playOut, function () { return bpm; });
+    else band = createBand(ctx, playOut, BACKING_STYLES[backingKind], function () { return bpm; });
+    band.start(ctx.currentTime + 0.1);
+  }
+  function stopBacking() {
+    if (band) { band.stop(); band = null; }
+    fileEl.pause();
+  }
+
+  /* ============ 伴奏 UI ============ */
+  var SOURCES = [
+    { k: 'none', label: 'なし', sub: 'アカペラ' },
+    { k: 'metronome', label: 'メトロ', sub: 'テンポ' },
+    { k: 'pop', label: 'ポップ', sub: '明るい' },
+    { k: 'ballad', label: 'バラード', sub: 'しっとり' },
+    { k: 'rock', label: 'ロック', sub: '激しい' },
+    { k: 'file', label: 'ファイル', sub: '自分の曲' }
+  ];
+  var srcgrid = $('srcgrid');
+  SOURCES.forEach(function (s) {
+    var b = document.createElement('div');
+    b.className = 'src'; b.setAttribute('data-k', s.k);
+    b.innerHTML = '<span class="sled"></span><span class="slabel">' + s.label + '</span><span class="ssub">' + s.sub + '</span>';
+    b.addEventListener('click', function () { selectKind(s.k); });
+    srcgrid.appendChild(b);
+  });
+
+  var fileWrap = $('fileWrap'), backingFile = $('backingFile'), filenameEl = $('filename');
+  var tempoRow = $('tempoRow'), bpmVal = $('bpmVal'), previewBtn = $('previewBtn');
+
+  function selectKind(k) {
+    if (playing) togglePreview();
+    backingKind = k;
+    for (var i = 0; i < srcgrid.children.length; i++) {
+      var c = srcgrid.children[i];
+      c.classList.toggle('active', c.getAttribute('data-k') === k);
+    }
+    var isBand = (k === 'metronome' || k === 'pop' || k === 'ballad' || k === 'rock');
+    if (k === 'pop' || k === 'ballad' || k === 'rock') { bpm = BACKING_STYLES[k].defaultBpm; bpmVal.textContent = bpm; }
+    if (k === 'metronome') { if (bpm < 40 || bpm > 240) bpm = 100; bpmVal.textContent = bpm; }
+    fileWrap.style.display = (k === 'file') ? 'inline-block' : 'none';
+    filenameEl.style.display = (k === 'file') ? 'block' : 'none';
+    tempoRow.style.display = isBand ? 'flex' : 'none';
+    previewBtn.style.display = (k === 'none' || (k === 'file' && !fileEl.src)) ? 'none' : 'block';
+  }
+  backingFile.addEventListener('change', function () {
+    var f = backingFile.files[0];
+    if (f) { fileEl.src = URL.createObjectURL(f); filenameEl.textContent = '🎵 ' + f.name; previewBtn.style.display = 'block'; }
+  });
+  $('bpmDown').addEventListener('click', function () { bpm = Math.max(40, bpm - 1); bpmVal.textContent = bpm; });
+  $('bpmUp').addEventListener('click', function () { bpm = Math.min(240, bpm + 1); bpmVal.textContent = bpm; });
+
+  function togglePreview() {
+    if (playing) { stopBacking(); playing = false; previewBtn.classList.remove('playing'); previewBtn.textContent = '▶ 試聴（鳴らして確かめる）'; }
+    else { startBacking(); playing = true; previewBtn.classList.add('playing'); previewBtn.textContent = '■ 試聴を止める'; }
+  }
+  previewBtn.addEventListener('click', togglePreview);
+
+  /* ============ 録音 ============ */
   var recBtn = $('recBtn'), timerEl = $('timer'), statusEl = $('status');
   var led = $('led'), statlabel = $('statlabel');
   var resultCard = $('resultCard'), player = $('player'), dlBtn = $('dlBtn'), savedEl = $('saved');
 
-  // VUメーターのセグメントを作る
-  var segsWrap = $('segs'), SEG_N = 22, segs = [];
-  for (var i = 0; i < SEG_N; i++) {
-    var s = document.createElement('span');
-    s.className = 'seg' + (i > SEG_N - 3 ? ' hicls' : i > SEG_N - 6 ? ' midcls' : '');
-    segsWrap.appendChild(s); segs.push(s);
+  var SEG_N = 22, segs = [], segsWrap = $('segs');
+  for (var i = 0; i < SEG_N; i++) { var sg = document.createElement('span'); sg.className = 'seg'; segsWrap.appendChild(sg); segs.push(sg); }
+
+  // 波形ディスプレイ
+  var waveCanvas = $('wave'), wctx = waveCanvas.getContext('2d'), wavePh = $('wavePh');
+  function sizeWave() {
+    var r = waveCanvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    waveCanvas.width = Math.max(1, r.width * dpr); waveCanvas.height = Math.max(1, r.height * dpr);
+    wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+  function drawWave() {
+    var dpr = window.devicePixelRatio || 1, w = waveCanvas.width / dpr, h = waveCanvas.height / dpr;
+    wctx.clearRect(0, 0, w, h);
+    wctx.lineWidth = 2; wctx.strokeStyle = '#21d4b4';
+    wctx.shadowColor = 'rgba(33,212,180,.5)'; wctx.shadowBlur = 4;
+    wctx.beginPath();
+    var slice = w / vuData.length;
+    for (var i = 0; i < vuData.length; i++) { var y = (vuData[i] / 255) * h; var x = i * slice; if (i === 0) wctx.moveTo(x, y); else wctx.lineTo(x, y); }
+    wctx.stroke(); wctx.shadowBlur = 0;
+  }
+  function clearWave() { var dpr = window.devicePixelRatio || 1; wctx.clearRect(0, 0, waveCanvas.width / dpr, waveCanvas.height / dpr); }
 
-  var backing = new Audio(); backing.preload = 'auto';
-  backingFile.addEventListener('change', function () {
-    var f = backingFile.files[0];
-    if (f) { backing.src = URL.createObjectURL(f); filename.textContent = '🎵 ' + f.name; }
-  });
-
-  var mediaRecorder, chunks = [], stream, recording = false, t0 = 0, timerId = null;
-  var audioCtx, analyser, vuData, vuRAF;
+  var mediaRecorder, chunks = [], micStream, recording = false, t0 = 0, timerId = null;
+  var vuCtx, analyser, vuData, vuRAF;
 
   function pickMime() {
     var c = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'];
@@ -182,71 +384,58 @@
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function fmt(ms) { var s = ms / 1000; return pad(Math.floor(s / 60)) + ':' + pad(Math.floor(s % 60)) + '.' + Math.floor((s * 10) % 10); }
 
-  function startVU(s) {
+  function startVU(stream) {
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      var src = audioCtx.createMediaStreamSource(s);
-      analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
-      src.connect(analyser);
+      vuCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var src = vuCtx.createMediaStreamSource(stream);
+      analyser = vuCtx.createAnalyser(); analyser.fftSize = 1024; src.connect(analyser);
       vuData = new Uint8Array(analyser.fftSize);
-      var tick = function () {
+      sizeWave(); wavePh.style.display = 'none';
+      (function tick() {
         analyser.getByteTimeDomainData(vuData);
-        var peak = 0;
-        for (var i = 0; i < vuData.length; i++) { var v = Math.abs(vuData[i] - 128) / 128; if (v > peak) peak = v; }
+        var peak = 0; for (var i = 0; i < vuData.length; i++) { var v = Math.abs(vuData[i] - 128) / 128; if (v > peak) peak = v; }
         var lit = Math.min(SEG_N, Math.round(peak * SEG_N * 2.2));
-        for (var k = 0; k < SEG_N; k++) {
-          var on = k < lit;
-          segs[k].className = 'seg' + (on ? ' on' + (k > SEG_N - 3 ? ' hi' : k > SEG_N - 6 ? ' mid' : '') : '');
-        }
+        for (var k = 0; k < SEG_N; k++) segs[k].className = 'seg' + (k < lit ? ' on' + (k > SEG_N - 3 ? ' hi' : k > SEG_N - 6 ? ' mid' : '') : '');
+        drawWave();
         vuRAF = requestAnimationFrame(tick);
-      };
-      tick();
-    } catch (e) { /* VUは無くても録音はできる */ }
+      })();
+    } catch (e) {}
   }
-  function stopVU() {
-    if (vuRAF) cancelAnimationFrame(vuRAF);
-    for (var k = 0; k < SEG_N; k++) segs[k].className = 'seg';
-    if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; }
-  }
+  function stopVU() { if (vuRAF) cancelAnimationFrame(vuRAF); for (var k = 0; k < SEG_N; k++) segs[k].className = 'seg'; clearWave(); wavePh.style.display = 'flex'; if (vuCtx) { try { vuCtx.close(); } catch (e) {} vuCtx = null; } }
 
-  function setStatus(mode) { // 'idle' | 'rec' | 'done'
+  function setStatus(mode) {
     led.className = 'led' + (mode === 'rec' ? ' rec' : mode === 'done' ? ' done' : '');
     statlabel.className = 'statlabel mono' + (mode === 'rec' ? ' rec' : mode === 'done' ? ' done' : '');
     statlabel.textContent = mode === 'rec' ? 'Rec' : mode === 'done' ? 'Take OK' : 'Standby';
   }
 
   function start() {
-    navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
-    }).then(function (s) {
-      stream = s;
-      var mime = pickMime();
-      mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-      chunks = [];
-      mediaRecorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
-      mediaRecorder.onstop = onStop;
-      if (backing.src) { backing.currentTime = 0; backing.play().catch(function () {}); }
-      mediaRecorder.start();
-      startVU(stream);
-      recording = true; recBtn.classList.add('recording'); setStatus('rec');
-      t0 = Date.now();
-      timerId = setInterval(function () { timerEl.textContent = fmt(Date.now() - t0); }, 100);
-      statusEl.textContent = '録音中… もう一度で停止';
-      resultCard.style.display = 'none';
-    }).catch(function () {
-      statusEl.innerHTML = '<span class="err">マイクの使用を許可してください</span>';
-    });
+    if (playing) togglePreview();
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } })
+      .then(function (s) {
+        micStream = s;
+        var mime = pickMime();
+        mediaRecorder = new MediaRecorder(micStream, mime ? { mimeType: mime } : undefined);
+        chunks = [];
+        mediaRecorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        mediaRecorder.onstop = onStop;
+        startBacking();
+        mediaRecorder.start();
+        startVU(micStream);
+        recording = true; recBtn.classList.add('recording'); setStatus('rec');
+        t0 = Date.now(); timerId = setInterval(function () { timerEl.textContent = fmt(Date.now() - t0); }, 100);
+        statusEl.textContent = '録音中… もう一度で停止';
+        resultCard.style.display = 'none';
+      }).catch(function () { statusEl.innerHTML = '<span class="err">マイクの使用を許可してください</span>'; });
   }
-
   function stop() {
     recording = false; recBtn.classList.remove('recording');
     if (timerId) { clearInterval(timerId); timerId = null; }
     if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-    backing.pause(); stopVU();
-    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+    stopBacking(); stopVU();
+    if (micStream) micStream.getTracks().forEach(function (t) { t.stop(); });
     statusEl.textContent = '保存中…';
   }
-
   function onStop() {
     var type = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
     var blob = new Blob(chunks, { type: type });
@@ -256,7 +445,6 @@
     dlBtn.setAttribute('download', 'studio-rocky.' + ext);
     resultCard.style.display = 'block';
     setStatus('done'); statusEl.textContent = '録音できました！赤ボタンで録り直し';
-
     savedEl.textContent = 'サーバーに保存中…';
     var fd = new FormData(); fd.append('audio', blob, 'rec.' + ext);
     fetch('/upload', { method: 'POST', body: fd })
@@ -264,8 +452,9 @@
       .then(function (d) { savedEl.textContent = (d && d.url) ? '✅ サーバーに保存しました' : '⚠ 保存はスキップ（手元の再生はOK）'; })
       .catch(function () { savedEl.textContent = '⚠ 保存はスキップ（手元の再生はOK）'; });
   }
-
   recBtn.addEventListener('click', function () { recording ? stop() : start(); });
+
+  selectKind('pop'); // 初期選択
 })();
 </script>
 </body>
