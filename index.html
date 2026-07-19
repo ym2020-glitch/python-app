@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Studio Rocky — かんたん録音</title>
+<style>
+  :root{
+    --bg:#0b0d12; --surface:#141821; --surface2:#1b2029; --border:#262c38;
+    --fg:#e8eaf0; --muted:#8b93a7; --accent:#ff5a5f; --accent2:#21d4b4; --danger:#ff4d4d;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  body{margin:0;color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;line-height:1.6;
+    background:radial-gradient(1200px 600px at 50% -10%, rgba(255,90,95,.08), transparent 60%), var(--bg);}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:520px;margin:0 auto;padding:18px 16px 60px}
+
+  /* ヘッダー */
+  header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .logo{width:40px;height:40px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:20px;color:#fff;background:linear-gradient(#ff6b70,#e0393e);
+    box-shadow:0 4px 14px -3px rgba(255,90,95,.7)}
+  .brand{font-weight:700;font-size:17px;letter-spacing:.01em}
+  .brand-sub{font-size:11px;color:var(--muted);letter-spacing:.14em}
+  .pill{margin-left:auto;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent2);
+    border:1px solid rgba(33,212,180,.35);border-radius:999px;padding:5px 11px;background:rgba(33,212,180,.07)}
+
+  .tagline{font-size:23px;font-weight:800;letter-spacing:-.01em;text-align:center;margin:6px 0 6px}
+  .lead{color:var(--muted);font-size:13px;text-align:center;margin:0 auto 14px;max-width:400px}
+  .note{background:rgba(33,212,180,.07);border:1px solid rgba(33,212,180,.3);color:var(--accent2);
+    border-radius:10px;padding:10px 12px;font-size:12.5px;margin-bottom:16px}
+
+  /* コンソール（ラック機材）*/
+  .console{position:relative;border:1px solid var(--border);border-radius:16px;overflow:hidden;
+    background:linear-gradient(#12161e,#0d1017);box-shadow:0 20px 50px -20px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.03)}
+  .screw{position:absolute;width:9px;height:9px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #3a4356, #10141b);box-shadow:inset 0 0 2px #000}
+  .screw.tl{top:9px;left:9px}.screw.tr{top:9px;right:9px}.screw.bl{bottom:9px;left:9px}.screw.br{bottom:9px;right:9px}
+  .console-top{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;
+    background:linear-gradient(#171c26,#12161e);border-bottom:1px solid var(--border)}
+  .console-title{font-size:10.5px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;font-weight:600}
+  .console-mk{font-size:10.5px;letter-spacing:.2em;color:var(--accent2);text-transform:uppercase}
+  .console-body{padding:18px 18px 20px}
+
+  /* ステータス＋タイマー */
+  .statusrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .statled{display:flex;align-items:center;gap:9px}
+  .led{width:12px;height:12px;border-radius:50%;background:#3a4150}
+  .led.rec{background:var(--danger);box-shadow:0 0 10px #ff4d4d;animation:pulse 1.2s ease-in-out infinite}
+  .led.done{background:var(--accent2);box-shadow:0 0 10px #21d4b4}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+  .statlabel{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .statlabel.rec{color:var(--danger)}.statlabel.done{color:var(--accent2)}
+  .timer{font-size:30px;font-weight:700;letter-spacing:.02em;color:var(--fg);text-shadow:0 0 12px rgba(33,212,180,.25)}
+
+  /* VUメーター */
+  .meterbox{display:flex;align-items:center;gap:10px;border:1px solid #0004;background:#0009;border-radius:9px;padding:9px 11px;margin-bottom:16px}
+  .metertag{font-size:10px;letter-spacing:.2em;color:var(--muted)}
+  .segs{display:flex;gap:3px;flex:1}
+  .seg{flex:1;height:12px;border-radius:2px;background:#20262f;transition:background .06s}
+  .seg.on{background:var(--accent2);box-shadow:0 0 5px rgba(33,212,180,.6)}
+  .seg.on.mid{background:#e8c33a;box-shadow:0 0 5px rgba(232,195,58,.6)}
+  .seg.on.hi{background:var(--danger);box-shadow:0 0 5px rgba(255,77,77,.6)}
+
+  /* ラックパネル（伴奏・再生）*/
+  .rack{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;
+    background:linear-gradient(#1a1f29,#14181f)}
+  .rack-head{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;
+    display:flex;justify-content:space-between}
+  .rack-sub{color:var(--muted);letter-spacing:.14em}
+  .filebtn{display:inline-block;font-size:13px;color:var(--fg);background:#222834;border:1px solid var(--border);
+    border-radius:9px;padding:8px 14px;cursor:pointer}
+  .filebtn input{display:none}
+  .filename{font-size:12px;color:var(--muted);margin-top:8px}
+
+  /* トランスポート（録音ボタン）*/
+  .transport{display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px 0 2px}
+  .recbtn{width:82px;height:82px;border-radius:50%;border:none;cursor:pointer;transition:transform .1s;
+    background:linear-gradient(#ff6b70,#e0393e);box-shadow:0 6px 18px -4px rgba(255,90,95,.7);
+    outline:4px solid rgba(0,0,0,.3);outline-offset:2px}
+  .recbtn:active{transform:scale(.95)}
+  .recbtn.recording{background:linear-gradient(#2a3140,#191d26)}
+  .recbtn .dot{display:block;width:30px;height:30px;margin:0 auto;border-radius:50%;background:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.2)}
+  .recbtn.recording .dot{width:24px;height:24px;border-radius:6px;background:var(--danger);box-shadow:0 0 10px #ff4d4d}
+  .transport-status{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  audio{width:100%;margin:4px 0 10px}
+  .btn{display:block;text-align:center;text-decoration:none;background:#222834;color:var(--fg);
+    border:1px solid var(--border);border-radius:10px;padding:11px;font-size:14px}
+  .saved{font-size:11.5px;color:var(--accent2);margin-top:9px;text-align:center;letter-spacing:.06em}
+  .err{color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">R</div>
+    <div>
+      <div class="brand">Studio Rocky</div>
+      <div class="brand-sub mono">音声加工・編集スタジオ</div>
+    </div>
+    <div class="pill mono">● Simple Rec</div>
+  </header>
+
+  <div class="tagline">歌えばその場でスタジオの響き</div>
+  <p class="lead">イヤホンを外して、スピーカーの伴奏を聴きながら歌おう。伴奏と歌声を“まとめて一発録り”。</p>
+
+  <div class="note">🔈 <b>イヤホンは外して。</b> スピーカーの伴奏と歌声を<b>一緒に</b>録るので、<b>絶対にズレません。</b></div>
+
+  <div class="console">
+    <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+
+    <div class="console-top">
+      <span class="console-title mono">◆ Rocky · Vocal Console</span>
+      <span class="console-mk mono">Rec-1</span>
+    </div>
+
+    <div class="console-body">
+      <div class="statusrow">
+        <div class="statled"><span class="led" id="led"></span><span class="statlabel mono" id="statlabel">Standby</span></div>
+        <div class="timer mono" id="timer">00:00.0</div>
+      </div>
+
+      <div class="meterbox">
+        <span class="metertag mono">LV</span>
+        <div class="segs" id="segs"></div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-head mono"><span>◆ Backing</span><span class="rack-sub">伴奏を選ぶ</span></div>
+        <label class="filebtn">ファイルを選択<input id="backingFile" type="file" accept="audio/*" /></label>
+        <div class="filename" id="filename">未選択（無しでもOK）</div>
+      </div>
+
+      <div class="transport">
+        <button id="recBtn" class="recbtn" aria-label="録音"><span class="dot"></span></button>
+        <div class="transport-status mono" id="status">赤ボタンで録音開始</div>
+      </div>
+
+      <div class="rack" id="resultCard" style="display:none">
+        <div class="rack-head mono"><span>▶ Playback</span><span class="rack-sub">録音した音</span></div>
+        <audio id="player" controls playsinline></audio>
+        <a class="btn" id="dlBtn" download="studio-rocky.webm">⬇ ダウンロード</a>
+        <div class="saved mono" id="saved"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var backingFile = $('backingFile'), filename = $('filename');
+  var recBtn = $('recBtn'), timerEl = $('timer'), statusEl = $('status');
+  var led = $('led'), statlabel = $('statlabel');
+  var resultCard = $('resultCard'), player = $('player'), dlBtn = $('dlBtn'), savedEl = $('saved');
+
+  // VUメーターのセグメントを作る
+  var segsWrap = $('segs'), SEG_N = 22, segs = [];
+  for (var i = 0; i < SEG_N; i++) {
+    var s = document.createElement('span');
+    s.className = 'seg' + (i > SEG_N - 3 ? ' hicls' : i > SEG_N - 6 ? ' midcls' : '');
+    segsWrap.appendChild(s); segs.push(s);
+  }
+
+  var backing = new Audio(); backing.preload = 'auto';
+  backingFile.addEventListener('change', function () {
+    var f = backingFile.files[0];
+    if (f) { backing.src = URL.createObjectURL(f); filename.textContent = '🎵 ' + f.name; }
+  });
+
+  var mediaRecorder, chunks = [], stream, recording = false, t0 = 0, timerId = null;
+  var audioCtx, analyser, vuData, vuRAF;
+
+  function pickMime() {
+    var c = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'];
+    for (var i = 0; i < c.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported(c[i])) return c[i];
+    return '';
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmt(ms) { var s = ms / 1000; return pad(Math.floor(s / 60)) + ':' + pad(Math.floor(s % 60)) + '.' + Math.floor((s * 10) % 10); }
+
+  function startVU(s) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var src = audioCtx.createMediaStreamSource(s);
+      analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
+      src.connect(analyser);
+      vuData = new Uint8Array(analyser.fftSize);
+      var tick = function () {
+        analyser.getByteTimeDomainData(vuData);
+        var peak = 0;
+        for (var i = 0; i < vuData.length; i++) { var v = Math.abs(vuData[i] - 128) / 128; if (v > peak) peak = v; }
+        var lit = Math.min(SEG_N, Math.round(peak * SEG_N * 2.2));
+        for (var k = 0; k < SEG_N; k++) {
+          var on = k < lit;
+          segs[k].className = 'seg' + (on ? ' on' + (k > SEG_N - 3 ? ' hi' : k > SEG_N - 6 ? ' mid' : '') : '');
+        }
+        vuRAF = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch (e) { /* VUは無くても録音はできる */ }
+  }
+  function stopVU() {
+    if (vuRAF) cancelAnimationFrame(vuRAF);
+    for (var k = 0; k < SEG_N; k++) segs[k].className = 'seg';
+    if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; }
+  }
+
+  function setStatus(mode) { // 'idle' | 'rec' | 'done'
+    led.className = 'led' + (mode === 'rec' ? ' rec' : mode === 'done' ? ' done' : '');
+    statlabel.className = 'statlabel mono' + (mode === 'rec' ? ' rec' : mode === 'done' ? ' done' : '');
+    statlabel.textContent = mode === 'rec' ? 'Rec' : mode === 'done' ? 'Take OK' : 'Standby';
+  }
+
+  function start() {
+    navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    }).then(function (s) {
+      stream = s;
+      var mime = pickMime();
+      mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      chunks = [];
+      mediaRecorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      mediaRecorder.onstop = onStop;
+      if (backing.src) { backing.currentTime = 0; backing.play().catch(function () {}); }
+      mediaRecorder.start();
+      startVU(stream);
+      recording = true; recBtn.classList.add('recording'); setStatus('rec');
+      t0 = Date.now();
+      timerId = setInterval(function () { timerEl.textContent = fmt(Date.now() - t0); }, 100);
+      statusEl.textContent = '録音中… もう一度で停止';
+      resultCard.style.display = 'none';
+    }).catch(function () {
+      statusEl.innerHTML = '<span class="err">マイクの使用を許可してください</span>';
+    });
+  }
+
+  function stop() {
+    recording = false; recBtn.classList.remove('recording');
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    backing.pause(); stopVU();
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+    statusEl.textContent = '保存中…';
+  }
+
+  function onStop() {
+    var type = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
+    var blob = new Blob(chunks, { type: type });
+    var url = URL.createObjectURL(blob);
+    player.src = url; dlBtn.href = url;
+    var ext = type.indexOf('mp4') >= 0 ? 'm4a' : type.indexOf('ogg') >= 0 ? 'ogg' : type.indexOf('wav') >= 0 ? 'wav' : 'webm';
+    dlBtn.setAttribute('download', 'studio-rocky.' + ext);
+    resultCard.style.display = 'block';
+    setStatus('done'); statusEl.textContent = '録音できました！赤ボタンで録り直し';
+
+    savedEl.textContent = 'サーバーに保存中…';
+    var fd = new FormData(); fd.append('audio', blob, 'rec.' + ext);
+    fetch('/upload', { method: 'POST', body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { savedEl.textContent = (d && d.url) ? '✅ サーバーに保存しました' : '⚠ 保存はスキップ（手元の再生はOK）'; })
+      .catch(function () { savedEl.textContent = '⚠ 保存はスキップ（手元の再生はOK）'; });
+  }
+
+  recBtn.addEventListener('click', function () { recording ? stop() : start(); });
+})();
+</script>
+</body>
+</html>

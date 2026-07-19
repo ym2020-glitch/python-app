@@ -30,8 +30,8 @@ app.config["MAX_CONTENT_LENGTH"] = 40 * 1024 * 1024  # アップロード上限 
 
 @app.route("/")
 def index():
-    """録音ページ（templates/index.html）をそのまま返す。"""
-    return send_from_directory(os.path.join(BASE_DIR, "templates"), "index.html")
+    """録音ページ（index.html）をそのまま返す。"""
+    return send_from_directory(BASE_DIR, "index.html")
 
 
 @app.route("/health")
