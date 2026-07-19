@@ -538,7 +538,7 @@
 
   /* ============ BackingTrackManager（Tone.js バンド／スピーカーへ出力→マイクが一緒に録る） ============ */
   var toneBuilt = false, tonePlaying = false;
-  var tMaster, tKick, tSnare, tHat, tHatFilter, tBass, tGuitar, tKeys, tFx = {}, tSeq;
+  var tMaster, masterReverb, tKick, tSnare, tSnareFilter, tHat, tHatFilter, tBass, tGuitar, tKeys, tFx = {}, tSeq;
   var gFx = 'chorus', kTone = 'strings', barIndex = 0;
   var tEnabled = { drums: true, bass: true, guitar: true, keyboard: true };
   var btmBpmEl = $('btmBpm');
@@ -560,23 +560,24 @@
   };
   var chordCount = 4;
   var PROG = PROGS[chordCount];
+  // Strings/Pad は Fat Oscillator を重ねて壮大に。release は短めで“もや”防止（空気感はマスターReverbが担当）。
   var KEY_PRESETS = {
-    strings: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.4, decay: 0.2, sustain: 0.8, release: 1.2 } },
-    sax: { oscillator: { type: 'square' }, envelope: { attack: 0.08, decay: 0.2, sustain: 0.7, release: 0.4 } },
-    piano: { oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.5, sustain: 0.2, release: 0.6 } },
-    pad: { oscillator: { type: 'sine' }, envelope: { attack: 0.8, decay: 0.4, sustain: 0.9, release: 1.5 } }
+    strings: { oscillator: { type: 'fatsawtooth', count: 6, spread: 22 }, envelope: { attack: 0.28, decay: 0.3, sustain: 0.7, release: 0.5 } },
+    sax: { oscillator: { type: 'fatsquare', count: 2, spread: 14 }, envelope: { attack: 0.06, decay: 0.2, sustain: 0.6, release: 0.35 } },
+    piano: { oscillator: { type: 'fattriangle', count: 2, spread: 10 }, envelope: { attack: 0.004, decay: 0.5, sustain: 0.12, release: 0.4 } },
+    pad: { oscillator: { type: 'fatsawtooth', count: 6, spread: 26 }, envelope: { attack: 0.45, decay: 0.4, sustain: 0.75, release: 0.55 } }
   };
 
   // ギター／キーボードは作り直せるようヘルパー化（切替時にクリーンな状態に戻す）
   function makeGuitar() {
-    var g = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.4 } });
-    g.volume.value = -15;
+    var g = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fatsawtooth', count: 2, spread: 12 }, envelope: { attack: 0.006, decay: 0.3, sustain: 0.25, release: 0.6 } });
+    g.volume.value = -14;
     g.connect(tFx[gFx]);
     return g;
   }
   function makeKeys() {
     var k = new Tone.PolySynth(Tone.Synth);
-    k.volume.value = -13;
+    k.volume.value = -12;
     k.set(KEY_PRESETS[kTone]);
     k.connect(tMaster);
     return k;
@@ -584,16 +585,31 @@
 
   function buildTone() {
     if (toneBuilt || !window.Tone) return;
-    tMaster = new Tone.Gain(0.8).toDestination();
-    tKick = new Tone.MembraneSynth({ volume: -4 }).connect(tMaster);
-    tSnare = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.18, sustain: 0 }, volume: -11 }).connect(tMaster);
-    tHatFilter = new Tone.Filter(7000, 'highpass').connect(tMaster);
-    tHat = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.04, sustain: 0 }, volume: -22 }).connect(tHatFilter);
-    tBass = new Tone.MonoSynth({ oscillator: { type: 'sawtooth' }, filter: { Q: 2, type: 'lowpass' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 }, filterEnvelope: { attack: 0.02, decay: 0.2, sustain: 0.4, baseFrequency: 120, octaves: 2.5 }, volume: -9 }).connect(tMaster);
+    // マスター：全楽器をまとめ、共通リバーブで“同じ部屋で演奏している”空気感に（wet控えめ）
+    masterReverb = new Tone.Reverb({ decay: 2.6, preDelay: 0.02, wet: 0.18 }).toDestination();
+    tMaster = new Tone.Gain(0.85).connect(masterReverb);
+
+    // ドラム：キック=太いサイン＋ピッチ落ちでズシン、スネア/ハット=タイトなフィルターで締める
+    tKick = new Tone.MembraneSynth({ pitchDecay: 0.045, octaves: 6, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.4, sustain: 0.008, release: 1.3 }, volume: -3 }).connect(tMaster);
+    tSnareFilter = new Tone.Filter({ type: 'bandpass', frequency: 1900, Q: 1.4 }).connect(tMaster);
+    tSnare = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.13, sustain: 0 }, volume: -9 }).connect(tSnareFilter);
+    tHatFilter = new Tone.Filter({ type: 'highpass', frequency: 8500, Q: 1 }).connect(tMaster);
+    tHat = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.028, sustain: 0 }, volume: -18 }).connect(tHatFilter);
+
+    // ベース：2つのノコギリ波をデチューンで重ね、うねりのある極太＆温かい低音
+    tBass = new Tone.MonoSynth({
+      oscillator: { type: 'fatsawtooth', count: 2, spread: 14 },
+      filter: { Q: 2, type: 'lowpass', rolloff: -24 },
+      envelope: { attack: 0.02, decay: 0.2, sustain: 0.6, release: 0.3 },
+      filterEnvelope: { attack: 0.02, decay: 0.18, sustain: 0.5, release: 0.3, baseFrequency: 90, octaves: 2.6 },
+      volume: -6
+    }).connect(tMaster);
+
+    // ギターのエフェクト（すべてマスターへ）
     tFx.chorus = new Tone.Chorus(4, 2.5, 0.5).connect(tMaster).start();
-    tFx.reverb = new Tone.Reverb(2.2).connect(tMaster);
-    tFx.delay = new Tone.FeedbackDelay('8n', 0.35).connect(tMaster);
-    tFx.distortion = new Tone.Distortion(0.5).connect(tMaster);
+    tFx.reverb = new Tone.Reverb(2).connect(tMaster);
+    tFx.delay = new Tone.FeedbackDelay('8n', 0.3).connect(tMaster);
+    tFx.distortion = new Tone.Distortion(0.4).connect(tMaster);
     tGuitar = makeGuitar();
     tKeys = makeKeys();
 
@@ -605,7 +621,7 @@
         if (s % 2 === 0) tHat.triggerAttackRelease('32n', time);
       }
       if (tEnabled.bass && s % 4 === 0) tBass.triggerAttackRelease(p.bass, '8n', time);
-      if (tEnabled.guitar && (s === 4 || s === 12)) tGuitar.triggerAttackRelease(p.chord, '8n', time);
+      if (tEnabled.guitar && s % 4 === 0) tGuitar.triggerAttackRelease(p.chord, '8n', time);
       if (tEnabled.keyboard && s === 0) tKeys.triggerAttackRelease(p.chord, '1m', time);
       if (s === 15) barIndex++;
     }, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], '16n');
@@ -641,7 +657,7 @@
   // 切替時は古い音を確実に消し、シンセを作り直す（＝スタックノート＝鳴りっぱなしを防ぐ）
   function setGuitarFx(name) {
     gFx = name;
-    if (toneBuilt) { try { tGuitar.releaseAll(); tGuitar.dispose(); } catch (e) {} tGuitar = makeGuitar(); }
+    if (toneBuilt && tGuitar) { try { tGuitar.releaseAll(); } catch (e) {} tGuitar.disconnect(); tGuitar.connect(tFx[name]); }
     updateToneUI();
   }
   function setKeyTone(name) {
