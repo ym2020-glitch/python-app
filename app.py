@@ -1,110 +1,66 @@
 """
-app.py
-------
-Studio Rocky - AI ミックス処理サーバー（FastAPI / Render 用エントリ）
+Studio Rocky - かんたん録音サーバー (Flask / 超軽量版)
+--------------------------------------------------
+新方針:
+  イヤホンを外し、スピーカーから伴奏を流しながら歌う。
+  スマホのマイクが「伴奏＋歌声」を【1つの音声ファイルとして一括録音】する。
+  → 2つの音を後で合成しないので、音ズレは物理的に起こらない。
 
-スマホアプリから「伴奏」と「歌声」を受け取り、ノイズ除去・音ズレ自動補正・
-コンプ/リミッターでプロ品質にミックスして返す。
+このサーバーの役割は「録音ファイルを受け取って保存」「保存したファイルを返す」だけ。
+音声合成・遅延補正・重い処理は一切しない（Render 無料枠でも軽々動く）。
 
-Render の起動コマンド:
-    uvicorn app:app --host 0.0.0.0 --port $PORT
+Render 起動コマンド:
+    gunicorn app:app --bind 0.0.0.0:$PORT
 """
 
-from __future__ import annotations
-
 import os
-import shutil
-import tempfile
-import traceback
 import uuid
-from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from starlette.background import BackgroundTask
+from flask import Flask, jsonify, request, send_from_directory
 
-from audio_mix import AudioProcessingError, mix_vocal_and_backing
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "recordings")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-app = FastAPI(title="Studio Rocky Mix API", version="2.0.0")
+ALLOWED_EXT = {".webm", ".wav", ".ogg", ".m4a", ".mp4"}
 
-# スマホアプリなど別オリジンから叩けるよう許可（本番は必要に応じて絞る）
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["POST", "GET"],
-    allow_headers=["*"],
-)
-
-ALLOWED_EXT = {".wav", ".mp3", ".m4a", ".aac", ".ogg", ".flac", ".webm"}
-MAX_BYTES = 60 * 1024 * 1024  # 60MB
+app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 40 * 1024 * 1024  # アップロード上限 40MB
 
 
-@app.get("/")
-def health() -> dict:
-    return {"status": "ok", "service": "studio-rocky-mix", "endpoint": "/api/mix-audio (POST)"}
+@app.route("/")
+def index():
+    """録音ページ（templates/index.html）をそのまま返す。"""
+    return send_from_directory(os.path.join(BASE_DIR, "templates"), "index.html")
 
 
-def _save_upload(up: UploadFile, dst_dir: str) -> str:
-    ext = Path(up.filename or "").suffix.lower()
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
+
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    """録音した「伴奏＋歌声」の1ファイルを受け取って保存する。"""
+    f = request.files.get("audio")
+    if f is None or f.filename == "":
+        return jsonify({"error": "音声ファイルがありません"}), 400
+
+    ext = os.path.splitext(f.filename)[1].lower()
     if ext not in ALLOWED_EXT:
-        raise HTTPException(
-            status_code=400,
-            detail=f"未対応の形式です: {ext or '不明'}（対応: {', '.join(sorted(ALLOWED_EXT))}）",
-        )
-    data = up.file.read()
-    if not data:
-        raise HTTPException(status_code=400, detail=f"ファイルが空です: {up.filename}")
-    if len(data) > MAX_BYTES:
-        raise HTTPException(
-            status_code=413,
-            detail=f"ファイルが大きすぎます（最大 {MAX_BYTES // 1024 // 1024}MB）",
-        )
-    path = os.path.join(dst_dir, f"{uuid.uuid4().hex}{ext}")
-    with open(path, "wb") as f:
-        f.write(data)
-    return path
+        ext = ".webm"  # 不明な拡張子は webm 扱い
+    name = f"{uuid.uuid4().hex}{ext}"
+    f.save(os.path.join(UPLOAD_DIR, name))
+    return jsonify({"ok": True, "url": f"/recordings/{name}", "name": name})
 
 
-@app.post("/api/mix-audio")
-async def mix_audio(
-    vocal: UploadFile = File(..., description="ユーザーの歌声"),
-    backing: UploadFile = File(..., description="伴奏インスト"),
-    vocal_lead_db: float = Query(3.0, ge=-6.0, le=12.0, description="歌を伴奏より前に出す量(dB)"),
-    manual_offset_ms: float = Query(0.0, ge=-400.0, le=400.0, description="ズレ手動微調整(ms)"),
-):
-    """2音源を受け取り、整列・加工・ミックスした WAV を返す。"""
-    work_dir = tempfile.mkdtemp(prefix="srmix_")
-    cleanup = BackgroundTask(shutil.rmtree, work_dir, ignore_errors=True)
-    try:
-        vocal_path = _save_upload(vocal, work_dir)
-        backing_path = _save_upload(backing, work_dir)
-        out_path = os.path.join(work_dir, "studio_rocky_mix.wav")
+@app.route("/recordings/<name>")
+def get_recording(name):
+    """保存した録音を返す。"""
+    return send_from_directory(UPLOAD_DIR, name)
 
-        info = mix_vocal_and_backing(
-            vocal_path=vocal_path,
-            backing_path=backing_path,
-            out_path=out_path,
-            vocal_lead_db=vocal_lead_db,
-            manual_offset_ms=manual_offset_ms,
-        )
-        return FileResponse(
-            info["output_path"],
-            media_type="audio/wav",
-            filename="studio_rocky_mix.wav",
-            headers={
-                "X-Corrected-Ms": str(info["corrected_ms"]),
-                "X-Duration-Sec": str(info["duration_sec"]),
-            },
-            background=cleanup,
-        )
-    except HTTPException:
-        shutil.rmtree(work_dir, ignore_errors=True)
-        raise
-    except AudioProcessingError as e:
-        shutil.rmtree(work_dir, ignore_errors=True)
-        raise HTTPException(status_code=422, detail=f"音声処理に失敗しました: {e}")
-    except Exception as e:  # noqa: BLE001
-        shutil.rmtree(work_dir, ignore_errors=True)
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"サーバー内部エラー: {e}")
+
+if __name__ == "__main__":
+    # ローカル実行用。Render では gunicorn が起動する。
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
