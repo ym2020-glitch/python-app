@@ -539,7 +539,7 @@
   /* ============ BackingTrackManager（Tone.js バンド／スピーカーへ出力→マイクが一緒に録る） ============ */
   var toneBuilt = false, tonePlaying = false;
   var tMaster, masterReverb, tKick, tSnare, tSnareFilter, tHat, tHatFilter, tBass, tGuitar, tKeys, tFx = {}, tSeq;
-  var gFx = 'chorus', kTone = 'strings', barIndex = 0;
+  var gFx = 'chorus', kTone = 'strings', barIndex = 0, seqStep = 0;
   var tEnabled = { drums: true, bass: true, guitar: true, keyboard: true };
   var btmBpmEl = $('btmBpm');
 
@@ -560,12 +560,12 @@
   };
   var chordCount = 4;
   var PROG = PROGS[chordCount];
-  // Strings/Pad は Fat Oscillator を重ねて壮大に。release は短めで“もや”防止（空気感はマスターReverbが担当）。
+  // 4音色はハッキリ別物に：Strings=明るいノコギリ / Sax=中空な矩形 / Piano=硬い三角(短い) / Pad=柔らかいサイン。
   var KEY_PRESETS = {
-    strings: { oscillator: { type: 'fatsawtooth', count: 6, spread: 22 }, envelope: { attack: 0.28, decay: 0.3, sustain: 0.7, release: 0.5 } },
-    sax: { oscillator: { type: 'fatsquare', count: 2, spread: 14 }, envelope: { attack: 0.06, decay: 0.2, sustain: 0.6, release: 0.35 } },
-    piano: { oscillator: { type: 'fattriangle', count: 2, spread: 10 }, envelope: { attack: 0.004, decay: 0.5, sustain: 0.12, release: 0.4 } },
-    pad: { oscillator: { type: 'fatsawtooth', count: 6, spread: 26 }, envelope: { attack: 0.45, decay: 0.4, sustain: 0.75, release: 0.55 } }
+    strings: { oscillator: { type: 'fatsawtooth', count: 6, spread: 22 }, envelope: { attack: 0.3, decay: 0.3, sustain: 0.7, release: 0.5 } },
+    sax: { oscillator: { type: 'fatsquare', count: 3, spread: 18 }, envelope: { attack: 0.05, decay: 0.15, sustain: 0.7, release: 0.3 } },
+    piano: { oscillator: { type: 'triangle' }, envelope: { attack: 0.003, decay: 0.35, sustain: 0.05, release: 0.35 } },
+    pad: { oscillator: { type: 'fatsine', count: 4, spread: 24 }, envelope: { attack: 0.6, decay: 0.5, sustain: 0.8, release: 0.6 } }
   };
 
   // ギター／キーボードは作り直せるようヘルパー化（切替時にクリーンな状態に戻す）
@@ -576,9 +576,10 @@
     return g;
   }
   function makeKeys() {
-    var k = new Tone.PolySynth(Tone.Synth);
+    var preset = KEY_PRESETS[kTone];
+    // オシレーターの種類/枚数はコンストラクタで渡す方が確実（set だと反映されないことがある）
+    var k = new Tone.PolySynth(Tone.Synth, { oscillator: preset.oscillator, envelope: preset.envelope });
     k.volume.value = -12;
-    k.set(KEY_PRESETS[kTone]);
     k.connect(tMaster);
     return k;
   }
@@ -613,8 +614,10 @@
     tGuitar = makeGuitar();
     tKeys = makeKeys();
 
-    tSeq = new Tone.Sequence(function (time, s) {
-      var p = PROG[barIndex % PROG.length];
+    tSeq = new Tone.Sequence(function (time) {
+      // seqStep を唯一の進行カウンタにして、確実にバーが進むようにする
+      var s = seqStep % 16;
+      var p = PROG[Math.floor(seqStep / 16) % PROG.length];
       if (tEnabled.drums) {
         if (s % 8 === 0) tKick.triggerAttackRelease('C1', '8n', time);
         if (s % 8 === 4) tSnare.triggerAttackRelease('16n', time);
@@ -623,7 +626,7 @@
       if (tEnabled.bass && s % 4 === 0) tBass.triggerAttackRelease(p.bass, '8n', time);
       if (tEnabled.guitar && s % 4 === 0) tGuitar.triggerAttackRelease(p.chord, '8n', time);
       if (tEnabled.keyboard && s === 0) tKeys.triggerAttackRelease(p.chord, '1m', time);
-      if (s === 15) barIndex++;
+      seqStep++;
     }, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], '16n');
 
     toneBuilt = true;
@@ -634,7 +637,7 @@
     Tone.start().then(function () {
       buildTone();
       Tone.Transport.bpm.value = bpm;   // 既存 BPM に同期
-      barIndex = 0;
+      barIndex = 0; seqStep = 0;
       tSeq.start(0);
       Tone.Transport.start();
       tonePlaying = true;
@@ -655,20 +658,31 @@
     updateToneUI();
   }
   // 切替時は古い音を確実に消し、シンセを作り直す（＝スタックノート＝鳴りっぱなしを防ぐ）
+  function curChord() { return PROG[Math.floor(seqStep / 16) % PROG.length]; }
+
   function setGuitarFx(name) {
     gFx = name;
-    if (toneBuilt && tGuitar) { try { tGuitar.releaseAll(); } catch (e) {} tGuitar.disconnect(); tGuitar.connect(tFx[name]); }
+    if (toneBuilt && tGuitar) {
+      try { tGuitar.releaseAll(); } catch (e) {}
+      tGuitar.disconnect(); tGuitar.connect(tFx[name]);
+      if (tonePlaying && tEnabled.guitar) tGuitar.triggerAttackRelease(curChord().chord, '4n'); // 即ストロークして違いを確認
+    }
     updateToneUI();
   }
   function setKeyTone(name) {
     kTone = name;
-    if (toneBuilt) { try { tKeys.releaseAll(); tKeys.dispose(); } catch (e) {} tKeys = makeKeys(); }
+    if (toneBuilt) {
+      try { tKeys.releaseAll(); tKeys.dispose(); } catch (e) {}
+      tKeys = makeKeys();
+      if (tonePlaying && tEnabled.keyboard) tKeys.triggerAttackRelease(curChord().chord, '2n'); // 即鳴らして音色変化を確認
+    }
     updateToneUI();
   }
   function setChordCount(n) {
     chordCount = n;
     PROG = PROGS[n];
-    releaseAllVoices();               // 進行が変わる瞬間の残り音を消す
+    seqStep = 0;                       // 新しい進行を頭から流して変化を分かりやすく
+    releaseAllVoices();
     updateToneUI();
   }
 
