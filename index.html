@@ -141,7 +141,7 @@
   <header>
     <div class="logo">R</div>
     <div><div class="brand">Studio Rocky</div><div class="brand-sub mono">音声加工・編集スタジオ</div></div>
-    <div class="pill mono">● Simple Rec</div>
+    <div class="pill mono">● Rec v4</div>
   </header>
 
   <div class="tagline">歌えばその場でスタジオの響き</div>
@@ -584,6 +584,24 @@
     return k;
   }
 
+  // ループ本体。seqStep を唯一の進行カウンタにして、現在の PROG/tKeys/tGuitar を毎回読み直す
+  function seqCallback(time) {
+    var s = seqStep % 16;
+    var p = PROG[Math.floor(seqStep / 16) % PROG.length];
+    if (tEnabled.drums) {
+      if (s % 8 === 0) tKick.triggerAttackRelease('C1', '8n', time);
+      if (s % 8 === 4) tSnare.triggerAttackRelease('16n', time);
+      if (s % 2 === 0) tHat.triggerAttackRelease('32n', time);
+    }
+    if (tEnabled.bass && s % 4 === 0) tBass.triggerAttackRelease(p.bass, '8n', time);
+    if (tEnabled.guitar && s % 4 === 0) tGuitar.triggerAttackRelease(p.chord, '8n', time);
+    if (tEnabled.keyboard && s === 0) tKeys.triggerAttackRelease(p.chord, '1m', time);
+    seqStep++;
+  }
+  function makeSeq() {
+    return new Tone.Sequence(seqCallback, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], '16n');
+  }
+
   function buildTone() {
     if (toneBuilt || !window.Tone) return;
     // マスター：全楽器をまとめ、共通リバーブで“同じ部屋で演奏している”空気感に（wet控えめ）
@@ -613,21 +631,7 @@
     tFx.distortion = new Tone.Distortion(0.4).connect(tMaster);
     tGuitar = makeGuitar();
     tKeys = makeKeys();
-
-    tSeq = new Tone.Sequence(function (time) {
-      // seqStep を唯一の進行カウンタにして、確実にバーが進むようにする
-      var s = seqStep % 16;
-      var p = PROG[Math.floor(seqStep / 16) % PROG.length];
-      if (tEnabled.drums) {
-        if (s % 8 === 0) tKick.triggerAttackRelease('C1', '8n', time);
-        if (s % 8 === 4) tSnare.triggerAttackRelease('16n', time);
-        if (s % 2 === 0) tHat.triggerAttackRelease('32n', time);
-      }
-      if (tEnabled.bass && s % 4 === 0) tBass.triggerAttackRelease(p.bass, '8n', time);
-      if (tEnabled.guitar && s % 4 === 0) tGuitar.triggerAttackRelease(p.chord, '8n', time);
-      if (tEnabled.keyboard && s === 0) tKeys.triggerAttackRelease(p.chord, '1m', time);
-      seqStep++;
-    }, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], '16n');
+    tSeq = makeSeq();
 
     toneBuilt = true;
   }
@@ -681,7 +685,13 @@
   function setChordCount(n) {
     chordCount = n;
     PROG = PROGS[n];
-    seqStep = 0;                       // 新しい進行を頭から流して変化を分かりやすく
+    // 走っているシーケンスを完全に破棄し、新しい進行で作り直して再スタート
+    if (toneBuilt && tSeq) {
+      try { tSeq.stop(); tSeq.dispose(); } catch (e) {}
+      seqStep = 0;
+      tSeq = makeSeq();
+      if (tonePlaying) tSeq.start(0);
+    }
     releaseAllVoices();
     updateToneUI();
   }

@@ -30,8 +30,12 @@ app.config["MAX_CONTENT_LENGTH"] = 40 * 1024 * 1024  # アップロード上限 
 
 @app.route("/")
 def index():
-    """録音ページ（index.html）をそのまま返す。"""
-    return send_from_directory(BASE_DIR, "index.html")
+    """録音ページ（index.html）をそのまま返す。常に最新を配るためキャッシュ無効化。"""
+    resp = send_from_directory(BASE_DIR, "index.html")
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 @app.route("/health")
